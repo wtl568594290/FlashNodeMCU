@@ -133,7 +133,7 @@ class Flash:
                     self.printInfo('NodeMCU已拔出，请插入NodeMCU进行下一个,退出请按Ctrl+C')
             time.sleep(1)
 
-    def flashNodeMCU(self, runStr='welcome'):
+    def flashNodeMCU(self, runStr='version'):
         self.printTitle('开始烧录')
         p = subprocess.Popen(
             'esptool.py -p ' + self.port + ' -b 1500000 -a hard_reset write_flash -e -ff 26m -fm dio -fs 4MB 0x00000 ' + self.bin,
@@ -209,7 +209,7 @@ class Flash:
             try:
                 with open(self.macLocation, 'a') as f:
                     f.write(mac + '\n')
-                self.printInfo('写入MAC:' + mac + '成功')
+                self.printInfo('MAC:   ' + mac + '   写入成功')
             except Exception:
                 messagebox.showerror(title='错误', message='mac地址写入出错')
                 return

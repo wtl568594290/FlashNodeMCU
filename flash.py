@@ -204,7 +204,7 @@ class Flash:
                 else:
                     print(line, end='')
         if isRunSuccess:
-            mac = self.mac.split(':', 1)[1].strip().replace(':', '-').upper()
+            mac = self.mac.split(':', 1)[1].strip().replace(':', '').upper()
             self.printTitle('开始写入MAC地址到' + self.macLocation)
             try:
                 with open(self.macLocation, 'a') as f:

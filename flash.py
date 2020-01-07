@@ -84,7 +84,7 @@ class ConfigWindow:
     def selectLua(self):
         lua = filedialog.askopenfile(title='选择init.lua文件', filetypes=[('Lua文件', 'init.lua')])
         if lua is not None:
-            self.luaVar.set('"' + lua.name + '"')
+            self.luaVar.set(lua.name)
 
     def selectMac(self):
         mac = filedialog.askopenfile(title='选择存放Mac的文件', filetypes=[('文本文件', '.txt')])
@@ -97,8 +97,10 @@ class Flash:
         self.port = port
         self.bin = bin
         self.lua = lua
+        self.luaPath = '"%s"' % lua[0:-9]
         self.macLocation = macLocation
         self.mac = ''
+        self.count = 0
         self.startFlash()
 
     def startFlash(self):
@@ -175,24 +177,23 @@ class Flash:
         time.sleep(1)
         self.printTitle('开始上传')
         p = subprocess.Popen(
-            'nodemcu-tool upload -p ' + self.port + ' ' + self.lua, shell=True, stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            # 'nodemcu-tool upload -p ' + self.port + ' ' + self.lua, shell=True, stdout=subprocess.PIPE,
+            'cd %s && nodemcu-uploader --port %s --baud 115200 upload init.lua:init.lua' % (self.luaPath, self.port),
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         isUploadFinish = False
         while p.poll() is None:
             line = p.stdout.readline()
             if line != '' and line != '\n':
                 print(line, end='')
-                if 'complete' in line:
+                if 'All done' in line:
                     isUploadFinish = True
         if not isUploadFinish:
             messagebox.showerror(title='错误', message='上传出错')
             return
         self.printTitle('开始运行')
         p = subprocess.Popen(
-            'nodemcu-tool run -p ' + self.port + ' init.lua', shell=True, stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            'cd %s && nodemcu-uploader --port %s --baud 115200 file do init.lua' % (self.luaPath, self.port),
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         isRunSuccess = False
         while p.poll() is None:
             line = p.stdout.readline()
@@ -214,6 +215,8 @@ class Flash:
                 messagebox.showerror(title='错误', message='mac地址写入出错')
                 return
             self.printInfo('烧录成功')
+            self.count += 1
+            self.printInfo('本次已烧录 %d 个模块' % self.count)
         else:
             messagebox.showerror(title='错误', message='运行出错了！！！！')
 
